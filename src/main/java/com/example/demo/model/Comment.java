@@ -1,7 +1,7 @@
 package com.example.demo.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
+import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
-import static jakarta.persistence.FetchType.LAZY;
+import static javax.persistence.FetchType.LAZY;
 
 @Data
 @AllArgsConstructor

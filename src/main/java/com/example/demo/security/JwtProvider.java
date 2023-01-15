@@ -1,8 +1,9 @@
 package com.example.demo.security;
 
 import com.example.demo.exceptions.SpringRedditException;
-import com.example.demo.model.User;
+import io.jsonwebtoken.Claims;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Jwts;
 
@@ -19,7 +20,7 @@ public class JwtProvider {
     @PostConstruct
     public void init() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
             keyStore = keyStore.getInstance("JKS");
-            InputStream resourceAsStream = getClass().getResourceAsStream("/springblog.jks");
+            InputStream resourceAsStream = getClass().getResourceAsStream("/springkeystore.jks");
             keyStore.load(resourceAsStream, "secrect".toCharArray());
     }
     public String generateToken(Authentication authentication) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
@@ -30,6 +31,32 @@ public class JwtProvider {
     }
 
     private PrivateKey getPrivateKey() throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException {
-        return (PrivateKey) keyStore.getKey("springblog", "secret".toCharArray());
+        Key tmpkey =  keyStore.getKey("springreddit", "secrect".toCharArray());
+        return (PrivateKey) tmpkey;
     }
+
+    public boolean validateToken(String jwt) {
+        Jwts.parser().setSigningKey(getPublickey()).parseClaimsJws(jwt);
+        return true;
+    }
+
+    private PublicKey getPublickey() {
+        try {
+            return keyStore.getCertificate("springreddit").getPublicKey();
+        } catch (KeyStoreException e) {
+            throw new SpringRedditException("Exception occured while retrieving public key from keystore");
+        }
+    }
+
+
+
+    public String getUsernameFromJWT(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(getPublickey())
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.getSubject();
+    }
+
 }
